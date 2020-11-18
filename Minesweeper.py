@@ -1,4 +1,6 @@
 from tkinter import *
+import time
+import tkinter
 import math
 import random
 
@@ -6,13 +8,49 @@ class ruta:
     grannar=0
     bomb=False
     tom=False
+    ursprungsruta=False
+    synlig = False
 
-def skapaspelplan(längd, höjd, antalbomber, klickx, klicky):
+
+def konrolleragänser(bredd, höjden, x, y):
+    class kontroll:
+        def __init__(self, vänster, höger, upp, ned):
+            self.vänster=vänster
+            self.höger = höger
+            self.upp = upp
+            self.ned = ned
+
+    if x != bredd and x != 0 and y != höjden and y != 0:
+        return kontroll(-1, 2, 2, -1)
+    else:
+        if x == 0:
+            if y != 0 and y != höjden:
+                return kontroll(0, 2, 2, -1)
+            elif y == 0:
+                return kontroll(0, 2, 2, 0)
+            else:
+                return kontroll(0, 2, 1, -1)
+        elif x == bredd:
+            if y != 0 and y != höjden:
+                return kontroll(-1, 1, 2, -1)
+            elif y == 0:
+                return kontroll(-1, 1, 2, 0)
+            else:
+                return kontroll(-1, 1, 1, -1)
+        elif y == 0:
+            return kontroll(-1, 2, 2, 0)
+        else:
+            return kontroll(-1, 2, 1, -1)
+
+
+
+def skapaspelplan(längd, höjd, antalbomber, klickx, klicky, antaltomma):
     spelplan=[[(ruta()) for l in range (längd+1)]for h in range (höjd+1)]
     spelplan[klickx][klicky].tom = True
     tommarutor=1
 
-    while tommarutor < 10:
+
+    while tommarutor < antaltomma:
         "denna loop skapar det tomma området runt där man klickar första gången"
         tommarutor +=1
         UtgångspunktFörTomtOmrådeX = klickx
@@ -20,6 +58,8 @@ def skapaspelplan(längd, höjd, antalbomber, klickx, klicky):
         while True:
             if spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].tom==False:
                 spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].tom=True
+                spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].ursprungsruta=True
+                spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].synlig=True
                 break
             steg=random.randint(1,4)
             if steg == 1 and UtgångspunktFörTomtOmrådeX != längd:
@@ -32,80 +72,184 @@ def skapaspelplan(längd, höjd, antalbomber, klickx, klicky):
                 UtgångspunktFörTomtOmrådeY -= 1
 
 
-    for i in range (antalbomber):
-        "denna loop placerar ut alla bomber på tiles och säger till dess grannar att " \
-        "det är en bomb i dess närhet"
+    for x in range (längd):
+        for y in range (höjd):
+            if random.random()-0.001 < antalbomber:
+                if spelplan[x][y].tom==False and spelplan[x][y].bomb==False:
+                    "om det inte är en bomb eller uttryckligen tom ruta så placerar den ut en bomb och " \
+                    "informerar grannar om att det är en bomb i närhetetn"
+                    spelplan[x][y].bomb=True
 
-        def LäggTillGrannar(sidledvänster, sidledhöger, höjdledned, höjdledupp):
-            "denna funktion lägger till +1 till alla grannar till bomben"
-            for sidled in range(sidledvänster, sidledhöger):
-                for höjdled in range(höjdledned, höjdledupp):
-                    spelplan[x + sidled][y + höjdled].grannar += 1
-        while True:
-            x = random.randint(0,längd)
-            y = random.randint(0,höjd)
-
-            if spelplan[x][y].tom==False and spelplan[x][y].bomb==False:
-                "om det inte är en bomb eller uttryckligen tom ruta så placerar den ut en bomb och " \
-                "informerar grannar om att det är en bomb i närhetetn"
-                spelplan[x][y].bomb=True
-
-                if x != längd and x != 0 and y != höjd and y != 0:
-                    "om det är en bomb mitt i brädet så placerar den ut grannar +1 på alla runtikring"
-                    LäggTillGrannar(-1, 2, -1, 2)
-                else:
-                    "om det är så att en bomb placeras på kanten av brädet måste det undersökas ytterligare och göras specialfall"
-                    if x==0:
-                        if y!=0 and y != höjd:
-                            LäggTillGrannar(0, 2, -1, 2)
-                        elif y==0:
-                            LäggTillGrannar(0, 2, 0 , 2)
-                        else:
-                            LäggTillGrannar(0,2,-1,1)
-                    elif x==längd:
-                        if y!=0 and y != höjd:
-                            LäggTillGrannar(-1, 1, -1, 2)
-                        elif y==0:
-                            LäggTillGrannar(-1, 1, 0, 2)
-                        else:
-                            LäggTillGrannar(-1,1,-1,1)
-                    elif y==0:
-                        LäggTillGrannar(-1, 2, 0 ,2)
-                    else:
-                        LäggTillGrannar(-1, 2, -1, 1)
-                break
-
+                    tilldelagrannar = konrolleragänser(längd, höjd, x, y)
+                    for sida in range(tilldelagrannar.vänster, tilldelagrannar.höger):
+                        for höjd in range(tilldelagrannar.ned, tilldelagrannar.upp):
+                            spelplan[x + sida][y + höjd].grannar += 1
 
     for sidled in range (längd):
         for höjdled in range(höjd):
             "om en ruta är helt tom och inte har några grannar tilldelas den attributet TOM"
-            if spelplan[sidled][höjdled].grannar == 0:
+            if spelplan[sidled][höjdled].grannar == 0 and spelplan[sidled][höjdled].ursprungsruta==False:
                 spelplan[sidled][höjdled].tom=True
     return spelplan
 
-def main():
-    SizeX=700
-    SizeY=500
-    bredd = 25
-    höjd = 15
 
-
+def spelet(bredd, höjd, antalbomber, antaltomma):
 
 
     window = Tk()
-    canvas = Canvas(window, width=SizeX, height=SizeY, bg="#000000")
-    canvas.pack()
+    rutbild = PhotoImage(file=r"tile.png")
+    gråruta = rutbild.subsample(8,8)
+    oformateradflagga = PhotoImage(file=r"flag.png")
+    flag=oformateradflagga.subsample(36, 36)
+    nollan = PhotoImage(file=r"0.png")
+    noll = nollan.subsample(8, 8)
+    ettan = PhotoImage(file=r"1.png")
+    ett = ettan.subsample(8,8)
+    tvåan = PhotoImage(file=r"2.png")
+    två = tvåan.subsample(8, 8)
+    trean = PhotoImage(file=r"3.png")
+    tre = trean.subsample(8, 8)
+    fyran = PhotoImage(file=r"4.png")
+    fyra = fyran.subsample(8, 8)
+    femman = PhotoImage(file=r"5.png")
+    fem = femman.subsample(8, 8)
+    sexan = PhotoImage(file=r"6.png")
+    sex = sexan.subsample(8, 8)
+    minan = PhotoImage(file=r"mina.png")
+    mina = minan.subsample(7, 7)
 
-    class knapp:
-        k=Label(window, width=(700/bredd), höjd)
+    rutnät = [[0 for h in range(höjd)] for b in range(bredd)]
+    global spelinfo
+    spelinfo = [[0 for h in range(höjd)] for b in range(bredd)]
+    antalknapptryck=0
+
+    def åtgärder_vid_synliggörande (x, y):
+        spelinfo[x][y].synlig = True
+        rutnät[x][y].unbind("<Button-1>")
+        rutnät[x][y].unbind("<Button-3>")
+        if spelinfo[x][y].bomb ==False:
+            if spelinfo[x][y].grannar == 0:
+                rutnät[x][y].config(image=noll)
+            elif spelinfo[x][y].grannar == 1:
+                rutnät[x][y].config(image=ett)
+            elif spelinfo[x][y].grannar == 2:
+                rutnät[x][y].config(image=två)
+            elif spelinfo[x][y].grannar == 3:
+                rutnät[x][y].config(image=tre)
+            elif spelinfo[x][y].grannar == 4:
+                rutnät[x][y].config(image=fyra)
+            elif spelinfo[x][y].grannar == 5:
+                rutnät[x][y].config(image=fem)
+            elif spelinfo[x][y].grannar == 6:
+                rutnät[x][y].config(image=sex)
+        else:
+            rutnät[x][y].config(image=mina)
 
 
 
-    for b in range (bredd):
-        for h in range (höjd):
-            img= PhotoImage(width=SizeX, height=SizeY)
-            canvas.create_image((SizeX / 2, SizeY / 2), image=img, state="normal")
+
+
+    def gör_ruta_synlig(x, y):
+        if spelinfo[x][y].bomb==False:
+            gränser = konrolleragänser(bredd, höjd, x, y)
+            for sida in range(gränser.vänster, gränser.höger):
+                for höjden in range(gränser.ned, gränser.upp):
+                    if spelinfo[x + sida][y + höjden].bomb == False:
+                        åtgärder_vid_synliggörande(x+sida, y+höjden)
+                        if spelinfo[x + sida][y + höjden].tom == True and spelinfo[x + sida][y + höjden].synlig == False:
+                            gör_ruta_synlig((x + sida), (y + höjden))
+
+
+    def knapptryck (x, y):
+        print(str(x)+ " "+ str(y))
+        if antalknapptryck==0:
+            print(str(bredd)+ " "+ str(höjd)+ " " +str(antalbomber)+ " " + str(x) + " " + str(y) + " "+ str(antaltomma))
+            return skapaspelplan(bredd, höjd, antalbomber, x, y, antaltomma)
+            for b in range (bredd):
+                for h in range (höjd):
+                    if spelinfo[b][h].ursprungsruta==True:
+                        gör_ruta_synlig(b, h)
+        else:
+            gör_ruta_synlig(x, y)
+
+
+    def återgåfrånfalgga(x, y):
+        rutnät[x][y].config(image=gråruta)
+        rutnät[x][y].bind("<Button-1>", lambda e, knapptryck=knapptryck:knapptryck(x, y))
+        rutnät[x][y].bind("<Button-3>", lambda e, knapptryck=knapptryck:flagga(x, y))
+
+    def flagga (x, y):
+        rutnät[x][y].config(image=flag)
+        rutnät[x][y].unbind("<Button-1>")
+        rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga:återgåfrånfalgga(x, y))
+
+
+    def skaparuta (rad, kollumn):
+        label = Label(window, image=gråruta)
+        label.grid(column=kollumn, row=rad)
+        label.bind("<Button-1>", lambda e, knapptryck=knapptryck:knapptryck(rad, kollumn))
+        label.bind("<Button-3>", lambda e, flagg=flagga:flagga(rad, kollumn))
+        return label
+
+
+    for x in range(höjd):
+        for y in range (bredd):
+            rutnät[x][y]=skaparuta(x, y)
+
+
+
+
+
+
+
+
+
 
 
     mainloop()
+
+def main():
+    window = Tk()
+
+
+
+    väljhöjd = Label(window, text="välj höjd på spelplanen, minst 8 enheter: ")
+    väljhöjd.grid(row=1, column=1, columnspan=2)
+    höjdinput = Entry(window)
+    höjdinput.grid(row=1, column=3)
+    väljbredd =Label(window, text="välj bredd på spelplanen, minst 8 enheter: ")
+    väljbredd.grid(row=2, column=1, columnspan=2)
+    breddinput = Entry(window)
+    breddinput.grid(row=2, column=3)
+
+    def sätt_igång_spelet(svårighetsgrad):
+        spelbredd = int(breddinput.get())
+        spelhöjd = int (höjdinput.get())
+        if spelbredd>=8 and spelhöjd>=8:
+            antaltomma = (spelhöjd*spelbredd)//10
+            if antaltomma > 10:
+                antaltomma=10
+            antalbomber = svårighetsgrad*0.075
+            window.destroy()
+            tid = time.process_time()
+            spelet(spelhöjd, spelbredd, antalbomber, antaltomma)
+
+        else:
+            felmeddelande = Label(window, text="kontrollera inputs och försök igen")
+            felmeddelande.grid(row=4, column=1, columnspan=3)
+
+
+
+    spelasvår = Button(window, text="Expert", command=lambda: sätt_igång_spelet(4)).grid(row=3, column=3)
+    spelamedel = Button(window, text="medel", command=lambda: sätt_igång_spelet(3)).grid(row=3, column=2)
+    spelalätt = Button(window, text="nybörjare", command=lambda: sätt_igång_spelet(2)).grid(row=3, column=1)
+    tomruta = Label(window, text="")
+    tomruta.grid(row=4, column=1)
+
+    mainloop()
+
+test = skapaspelplan(10,10,25,0,0,10)
+print(test[9][9].synlig)
+
+spelet(10,10, 25, 10)
 

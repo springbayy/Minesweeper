@@ -4,8 +4,11 @@ import tkinter
 import math
 import random
 
+def slut(tid_start, tid_slut, knapptryck, bombchans):
+    poäng = (tid_slut-tid_start)*(bombchans/knapptryck)
 
-def spelet(width, height, bombchans, antaltomma):
+
+def spelet(width, height, bombchans, antaltomma, tid_start):
     window = Tk()
     rutbild = PhotoImage(file=r"tile.png")
     gråruta = rutbild.subsample(8, 8)
@@ -29,16 +32,28 @@ def spelet(width, height, bombchans, antaltomma):
     mina = minan.subsample(7, 7)
 
     rutnät = [[0 for h in range(height)] for b in range(width)]
+    spelinfo = 0
     antalknapptryck = 0
     antalbomber=math.ceil(((width*height)-antaltomma)*bombchans)
-    kvar_till_vinst = (width*height) - antalbomber
+    kvar_till_vinst = (width*height) - antalbomber + 1
 
     def loser():
+        tid_slut = time.time()
         for x in range (width):
             for y in range(height):
                 åtgärder_vid_synliggörande(x, y)
-        förlustfönster = Tk()
-        förlust_meddelande = Label(förlustfönster, text="Du förlorade").pack()
+        slut(tid_start, tid_slut, antalknapptryck, bombchans)
+
+    def winner():
+        tid_slut = time.time()
+        for x in range(width):
+            for y in range(height):
+                rutnät[x][y].unbind("<Button-1>")
+                rutnät[x][y].unbind("<Button-3>")
+                if spelinfo [x][y].bomb==True:
+                    rutnät[x][y].config(image=flag)
+        slut(tid_start, tid_slut, antalknapptryck/0.75, bombchans)
+
 
 
 
@@ -149,6 +164,12 @@ def spelet(width, height, bombchans, antaltomma):
             rutnät[x][y].config(image=fem)
         elif spelinfo[x][y].grannar == 6:
             rutnät[x][y].config(image=sex)
+        nonlocal kvar_till_vinst
+        kvar_till_vinst -= 1
+        print(kvar_till_vinst)
+        if kvar_till_vinst == 0:
+            winner()
+
 
 
     def gör_ruta_synlig(x, y):
@@ -164,10 +185,9 @@ def spelet(width, height, bombchans, antaltomma):
             loser()
 
     def knapptryck(x, y):
-        print(str(x)+ " "+ str(y))
         nonlocal antalknapptryck
         if antalknapptryck == 0:
-            global spelinfo
+            nonlocal spelinfo
             spelinfo = skapaspelplan(x, y)
             gräns = konrolleragänser(x, y)
             for sida in range(gräns.vänster, gräns.höger):
@@ -175,7 +195,6 @@ def spelet(width, height, bombchans, antaltomma):
                     if spelinfo[x + sida][y + höjden].synlig == False and spelinfo[x + sida][y + höjden].bomb == False:
                         gör_ruta_synlig(x + sida, y + höjden)
         gör_ruta_synlig(x, y)
-
         antalknapptryck += 1
 
     def återgåfrånfalgga(x, y):
@@ -215,16 +234,17 @@ def main():
     breddinput.grid(row=2, column=3)
 
     def sätt_igång_spelet(svårighetsgrad):
+        tid_start = time.time()
         spelbredd = int(breddinput.get())
         spelhöjd = int(höjdinput.get())
         if spelbredd >= 8 and spelhöjd >= 8:
             antaltomma = (spelhöjd * spelbredd) // 10
             if antaltomma > 10:
                 antaltomma = 10
-            antalbomber = svårighetsgrad * 0.075
+            bombchans = svårighetsgrad * 0.085
             window.destroy()
-            tid = time.process_time()
-            spelet(spelhöjd, spelbredd, antalbomber, antaltomma)
+            spelet(spelhöjd, spelbredd, bombchans, antaltomma, tid_start)
+
 
         else:
             felmeddelande = Label(window, text="kontrollera inputs och försök igen")
@@ -239,4 +259,7 @@ def main():
     mainloop()
 
 
-spelet(10, 10, 0.3, 7)
+
+
+
+main()

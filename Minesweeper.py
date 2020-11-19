@@ -5,7 +5,7 @@ import math
 import random
 
 
-def spelet(width, height, antalbomber, antaltomma):
+def spelet(width, height, bombchans, antaltomma):
     window = Tk()
     rutbild = PhotoImage(file=r"tile.png")
     gråruta = rutbild.subsample(8, 8)
@@ -30,6 +30,19 @@ def spelet(width, height, antalbomber, antaltomma):
 
     rutnät = [[0 for h in range(height)] for b in range(width)]
     antalknapptryck = 0
+    antalbomber=math.ceil(((width*height)-antaltomma)*bombchans)
+    kvar_till_vinst = (width*height) - antalbomber
+
+    def loser():
+        for x in range (width):
+            for y in range(height):
+                åtgärder_vid_synliggörande(x, y)
+        förlustfönster = Tk()
+        förlust_meddelande = Label(förlustfönster, text="Du förlorade").pack()
+
+
+
+
 
     def konrolleragänser(x, y):
         class kontroll:
@@ -70,7 +83,7 @@ def spelet(width, height, antalbomber, antaltomma):
             ursprungsruta = False
             synlig = False
 
-        spelplan = [[(ruta()) for l in range(width + 1)] for h in range(height + 1)]
+        spelplan = [[ruta() for l in range(width + 1)] for h in range(height + 1)]
         spelplan[klickx][klicky].ursprungsruta = True
         tommarutor = 1
 
@@ -93,18 +106,19 @@ def spelet(width, height, antalbomber, antaltomma):
                 elif steg == 4 and UtgångspunktFörTomtOmrådeY != 0:
                     UtgångspunktFörTomtOmrådeY -= 1
 
-        for b in range (width):
-            for h in range(height):
-                r = random.random()
-                if r < antalbomber:
-                    if spelplan[b][h].ursprungsruta == False:
-                        "om det inte är en bomb eller uttryckligen tom ruta så placerar den ut en bomb och " \
-                        "informerar grannar om att det är en bomb i närhetetn"
-                        spelplan[b][h].bomb = True
-                        tilldelagrannar = konrolleragänser(b, h)
-                        for sida in range(tilldelagrannar.vänster, tilldelagrannar.höger):
-                            for höjd in range(tilldelagrannar.ned, tilldelagrannar.upp):
-                                spelplan[b + sida][h + höjd].grannar += 1
+        bomber=0
+        while bomber < antalbomber:
+            randomX = random.randint(0, width - 1)
+            randomY = random.randint(0, height - 1)
+            if spelplan[randomX][randomY].ursprungsruta == False and spelplan[randomX][randomY].bomb == False:
+                "om det inte är en bomb eller uttryckligen tom ruta så placerar den ut en bomb och " \
+                "informerar grannar om att det är en bomb i närhetetn"
+                spelplan[randomX][randomY].bomb = True
+                tilldelagrannar = konrolleragänser(randomX, randomY)
+                for sida in range(tilldelagrannar.vänster, tilldelagrannar.höger):
+                    for höjd in range(tilldelagrannar.ned, tilldelagrannar.upp):
+                        spelplan[randomX + sida][randomY + höjd].grannar += 1
+                bomber+=1
 
 
         for sidled in range(width):
@@ -112,7 +126,6 @@ def spelet(width, height, antalbomber, antaltomma):
                 "om en ruta är helt tom och inte har några grannar tilldelas den attributet TOM"
                 if spelplan[sidled][höjdled].grannar == 0 and spelplan[sidled][höjdled].bomb == False:
                     spelplan[sidled][höjdled].tom = True
-                    print(spelplan[sidled][höjdled].tom + spelplan[sidled][höjdled].bomb)
 
         return spelplan
 
@@ -120,21 +133,23 @@ def spelet(width, height, antalbomber, antaltomma):
         spelinfo[x][y].synlig = True
         rutnät[x][y].unbind("<Button-1>")
         rutnät[x][y].unbind("<Button-3>")
-        if spelinfo[x][y].bomb==False:
-            if spelinfo[x][y].grannar == 0:
-                rutnät[x][y].config(image=noll)
-            elif spelinfo[x][y].grannar == 1:
-                rutnät[x][y].config(image=ett)
-            elif spelinfo[x][y].grannar == 2:
-                rutnät[x][y].config(image=två)
-            elif spelinfo[x][y].grannar == 3:
-                rutnät[x][y].config(image=tre)
-            elif spelinfo[x][y].grannar == 4:
-                rutnät[x][y].config(image=fyra)
-            elif spelinfo[x][y].grannar == 5:
-                rutnät[x][y].config(image=fem)
-            elif spelinfo[x][y].grannar == 6:
-                rutnät[x][y].config(image=sex)
+        if spelinfo[x][y].bomb==True:
+            rutnät[x][y].config(image=mina)
+        elif spelinfo[x][y].grannar == 0:
+            rutnät[x][y].config(image=noll)
+        elif spelinfo[x][y].grannar == 1:
+            rutnät[x][y].config(image=ett)
+        elif spelinfo[x][y].grannar == 2:
+            rutnät[x][y].config(image=två)
+        elif spelinfo[x][y].grannar == 3:
+            rutnät[x][y].config(image=tre)
+        elif spelinfo[x][y].grannar == 4:
+            rutnät[x][y].config(image=fyra)
+        elif spelinfo[x][y].grannar == 5:
+            rutnät[x][y].config(image=fem)
+        elif spelinfo[x][y].grannar == 6:
+            rutnät[x][y].config(image=sex)
+
 
     def gör_ruta_synlig(x, y):
         if spelinfo[x][y].bomb == False:
@@ -146,7 +161,7 @@ def spelet(width, height, antalbomber, antaltomma):
                         if spelinfo[x+sida][y+höjden].synlig==False and spelinfo[x+sida][y+höjden].bomb==False:
                             gör_ruta_synlig(x+sida, y+höjden)
         if spelinfo[x][y].bomb == True:
-            rutnät[x][y].config(image=mina)
+            loser()
 
     def knapptryck(x, y):
         print(str(x)+ " "+ str(y))
@@ -154,6 +169,11 @@ def spelet(width, height, antalbomber, antaltomma):
         if antalknapptryck == 0:
             global spelinfo
             spelinfo = skapaspelplan(x, y)
+            gräns = konrolleragänser(x, y)
+            for sida in range(gräns.vänster, gräns.höger):
+                for höjden in range(gräns.ned, gräns.upp):
+                    if spelinfo[x + sida][y + höjden].synlig == False and spelinfo[x + sida][y + höjden].bomb == False:
+                        gör_ruta_synlig(x + sida, y + höjden)
         gör_ruta_synlig(x, y)
 
         antalknapptryck += 1
@@ -169,7 +189,7 @@ def spelet(width, height, antalbomber, antaltomma):
         rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga: återgåfrånfalgga(x, y))
 
     def skaparuta(rad, kollumn):
-        label = Label(window, image=gråruta)
+        label = Label(window, image=gråruta, cursor="tcross")
         label.grid(column=kollumn + 1, row=rad + 1)
         label.bind("<Button-1>", lambda e, knapptryck=knapptryck: knapptryck(rad, kollumn))
         label.bind("<Button-3>", lambda e, flagg=flagga: flagga(rad, kollumn))
@@ -219,4 +239,4 @@ def main():
     mainloop()
 
 
-spelet(20, 20, 0.3, 20)
+spelet(10, 10, 0.3, 7)

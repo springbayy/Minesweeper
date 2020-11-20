@@ -162,8 +162,6 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
                 "informerar grannar om att det är en bomb i närhetetn"
                 spelplan[randomX][randomY].bomb = True
                 tilldelagrannar = konrolleragänser(randomX, randomY)
-                print(str(randomX) + "  " + str(randomY) + "  " + str(tilldelagrannar.vänster) + "  " + str(
-                    tilldelagrannar.höger) + "  " + str(tilldelagrannar.upp) + "  " + str(tilldelagrannar.ned))
                 for sida in range(tilldelagrannar.vänster, tilldelagrannar.höger):
                     for höjd in range(tilldelagrannar.ned, tilldelagrannar.upp):
                         spelplan[randomX + sida][randomY + höjd].grannar += 1

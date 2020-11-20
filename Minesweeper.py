@@ -7,7 +7,7 @@ def slut(tid_start, tid_slut, knapptryck, bombchans):
     "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
     "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar llt eller inte"
 
-    poäng = int((bombchans*knapptryck)/(tid_slut-tid_start+10)*1000)
+    poäng = int((bombchans*knapptryck)/(tid_slut-tid_start+100)*1000)
     toppplista_skriv = open('topplista', 'a')
     toppplista_skriv.write(str(poäng)+'\n')
     toppplista_skriv.close()

@@ -4,10 +4,14 @@ import math
 import random
 
 def slut(tid_start, tid_slut, knapptryck, bombchans):
+    def återstart():
+        window.destroy()
+        main()
+        return window.destroy()
     "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
     "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar det eller inte"
 
-    poäng = int((bombchans*knapptryck)/(tid_slut-tid_start+100)*1000)
+    poäng = int((bombchans*knapptryck)/(tid_slut-tid_start+10)*1000)
     toppplista_skriv = open('topplista', 'a')
     toppplista_skriv.write(str(poäng)+'\n')
     toppplista_skriv.close()
@@ -28,6 +32,8 @@ def slut(tid_start, tid_slut, knapptryck, bombchans):
     for rutor in range (min(10, len(sorterad_topplista))):
         resultat_rutor[0]= Label(window, text=str(rutor+1) + ".", pady=8, padx=8).grid(row= (4 + rutor), column=1)
         resultat_rutor[1] = Label(window, text=str(sorterad_topplista[rutor]) + " poäng", pady=8, padx=8).grid(row=4 + rutor, column=2)
+    spela_igen = Button(window, text="Spela igen", command=lambda: återstart()).grid(row=15, columnspan=2)
+
 
 
 
@@ -36,30 +42,31 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
     "detta är den stora funktionen som skapar minesweeper"
     window = Tk()
     rutbild = PhotoImage(file=r"tile.png")
-    gråruta = rutbild.subsample(8, 8)
+    gråruta = rutbild.subsample(5, 5)
     oformateradflagga = PhotoImage(file=r"flag.png")
-    flag = oformateradflagga.subsample(36, 36)
-    nollan = PhotoImage(file=r"0.png")
-    noll = nollan.subsample(8, 8)
-    ettan = PhotoImage(file=r"1.png")
-    ett = ettan.subsample(8, 8)
-    tvåan = PhotoImage(file=r"2.png")
-    två = tvåan.subsample(8, 8)
-    trean = PhotoImage(file=r"3.png")
-    tre = trean.subsample(8, 8)
-    fyran = PhotoImage(file=r"4.png")
-    fyra = fyran.subsample(8, 8)
-    femman = PhotoImage(file=r"5.png")
-    fem = femman.subsample(8, 8)
-    sexan = PhotoImage(file=r"6.png")
-    sex = sexan.subsample(8, 8)
-    minan = PhotoImage(file=r"mina.png")
-    mina = minan.subsample(7, 7)
+    bilder = [0 for i in range (10)]
+    flag = oformateradflagga.subsample(23, 23)
+    noll= PhotoImage(file=r"0.png").subsample(5, 5)
+    ett = PhotoImage(file=r"1.png").subsample(5, 5)
+    två  = PhotoImage(file=r"2.png").subsample(5, 5)
+    tre = PhotoImage(file=r"3.png").subsample(5, 5)
+    fyra = PhotoImage(file=r"4.png").subsample(5, 5)
+    fem = PhotoImage(file=r"5.png").subsample(5, 5)
+    sex = PhotoImage(file=r"6.png").subsample(5, 5)
+    "lägger alla bilder i en lista, man kan inte skapa bilderna direkt i listan utan man måste skapa dem och sedan lägga dem i listan"
+    bilder[0] = noll
+    bilder[1] = ett
+    bilder[2] = två
+    bilder[3] = tre
+    bilder[4] = fyra
+    bilder[5] = fem
+    bilder[6] = sex
+    mina = PhotoImage(file=r"mina.png").subsample(5, 5)
 
     "vital information"
     rutnät = [[0 for h in range(height)] for b in range(width)]
-    spelinfo = 0
-    antalknapptryck = 0
+    spelinfo = [[0 for h in range(height)] for b in range(width)]
+    antal_knapptryck = 0
     korrekta_flaggor= 0
     antalbomber=math.ceil(((width*height)-antaltomma)*bombchans)
     kvar_till_vinst = (width*height) - antalbomber + 1
@@ -70,7 +77,7 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
         for x in range (width):
             for y in range(height):
                 åtgärder_vid_synliggörande(x, y)
-        slut(tid_start, tid_slut, antalknapptryck, bombchans)
+        slut(tid_start, tid_slut, antal_knapptryck, bombchans)
         info_om_flaggor = Label(window, text="Antal korrekt markerade Minor: " + str(korrekta_flaggor)+ "/"+str(antalbomber)).grid(row=1, column=1, columnspan=height)
 
     def winner():
@@ -82,13 +89,13 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
                 rutnät[x][y].unbind("<Button-3>")
                 if spelinfo [x][y].bomb==True:
                     rutnät[x][y].config(image=flag)
-        slut(tid_start, tid_slut, antalknapptryck/0.75, bombchans)
+        slut(tid_start, tid_slut, antal_knapptryck/0.75, bombchans)
 
 
 
     def konrolleragänser(x, y):
         "denna funktion kallas på när en del av programmet ska kolla på rutorna runtikring sig"
-        "den ollar att inget är utanför listan och returnerar objektet kontroll som har 4 värden som är giltiga ställen att kolla eter i listan"
+        "den kollar att inget är utanför listan och returnerar objektet kontroll som har 4 värden som är giltiga gränser att kolla inom i listan"
         class kontroll:
             def __init__(self, vänster, höger, upp, ned):
                 self.vänster = vänster
@@ -167,13 +174,6 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
                         spelplan[randomX + sida][randomY + höjd].grannar += 1
                 bomber+=1
 
-
-        for sidled in range(width):
-            for höjdled in range(height):
-                "om en ruta är helt tom och inte har några grannar tilldelas den attributet TOM"
-                if spelplan[sidled][höjdled].grannar == 0 and spelplan[sidled][höjdled].bomb == False:
-                    spelplan[sidled][höjdled].tom = True
-
         return spelplan
 
     def åtgärder_vid_synliggörande(x, y):
@@ -183,22 +183,9 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
         rutnät[x][y].unbind("<Button-3>")
         if spelinfo[x][y].flaggad == False:
             if spelinfo[x][y].bomb==True:
-                print(spelinfo[x][y].flaggad)
                 rutnät[x][y].config(image=mina)
-            elif spelinfo[x][y].grannar == 0:
-                rutnät[x][y].config(image=noll)
-            elif spelinfo[x][y].grannar == 1:
-                rutnät[x][y].config(image=ett)
-            elif spelinfo[x][y].grannar == 2:
-                rutnät[x][y].config(image=två)
-            elif spelinfo[x][y].grannar == 3:
-                rutnät[x][y].config(image=tre)
-            elif spelinfo[x][y].grannar == 4:
-                rutnät[x][y].config(image=fyra)
-            elif spelinfo[x][y].grannar == 5:
-                rutnät[x][y].config(image=fem)
-            elif spelinfo[x][y].grannar == 6:
-                rutnät[x][y].config(image=sex)
+            else:
+                rutnät[x][y].config(image=bilder[spelinfo[x][y].grannar])
             nonlocal kvar_till_vinst
             kvar_till_vinst -= 1
 
@@ -223,8 +210,8 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
 
     def knapptryck(x, y):
         "denna funktion aktiveras vid varje vänsterklick och om det är första klicket skapar den hela spelplanen (dvs om antalknapptryck==0)"
-        nonlocal antalknapptryck
-        if antalknapptryck == 0:
+        nonlocal antal_knapptryck
+        if antal_knapptryck == 0:
             nonlocal spelinfo
             spelinfo = skapaspelplan(x, y)
             gräns = konrolleragänser(x, y)
@@ -233,7 +220,7 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
                     if spelinfo[x + sida][y + höjden].synlig == False and spelinfo[x + sida][y + höjden].bomb == False:
                         gör_ruta_synlig(x + sida, y + höjden)
         gör_ruta_synlig(x, y)
-        antalknapptryck += 1
+        antal_knapptryck += 1
 
     def återgåfrånfalgga(x, y):
         "låter ruta gå från flagga till vanlig ruta"
@@ -246,22 +233,22 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
             korrekta_flaggor -= 1
 
     def flagga(x, y):
-        "låter en ruta bli o-klickbar och visar flagga"
-        rutnät[x][y].config(image=flag)
-        rutnät[x][y].unbind("<Button-1>")
-        rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga: återgåfrånfalgga(x, y))
-        if spelinfo[x][y].bomb ==True:
-            spelinfo[x][y].flaggad = True
-            print(spelinfo[x][y].flaggad)
-            nonlocal korrekta_flaggor
-            korrekta_flaggor += 1
+        if antal_knapptryck != 0:
+            "låter en ruta bli o-klickbar och visar flagga"
+            rutnät[x][y].config(image=flag)
+            rutnät[x][y].unbind("<Button-1>")
+            rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga: återgåfrånfalgga(x, y))
+            if spelinfo[x][y].bomb ==True:
+                spelinfo[x][y].flaggad = True
+                nonlocal korrekta_flaggor
+                korrekta_flaggor += 1
 
     def skaparuta(rad, kollumn):
         "denna funktion skapar spelplanen med alla bilder det första som händer"
         label = Label(window, image=gråruta, cursor="tcross")
         label.grid(column=kollumn + 1, row=rad + 2)
-        label.bind("<Button-1>", lambda e, knapptryck=knapptryck: knapptryck(rad, kollumn))
-        label.bind("<Button-3>", lambda e, flagg=flagga: flagga(rad, kollumn))
+        label.bind("<Button-1>", lambda e, : knapptryck(rad, kollumn))
+        label.bind("<Button-3>", lambda e, : flagga(rad, kollumn))
         return label
 
     for x in range(width):
@@ -269,7 +256,7 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
             rutnät[x][y] = skaparuta(x, y)
             "denna loop har i uppgift att skap alla rutor och att tilldela alla Labels en position i en matris"
 
-    mainloop()
+
 
 
 def main():

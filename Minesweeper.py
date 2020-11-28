@@ -3,99 +3,23 @@ import time
 import math
 import random
 
-def slut(tid_start, tid_slut, knapptryck, bombchans):
-    def återstart():
-        window.destroy()
-        main()
-        return window.destroy()
-    "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
-    "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar det eller inte"
 
-    poäng = int((bombchans*knapptryck)/(tid_slut-tid_start+10)*1000)
-    toppplista_skriv = open('topplista', 'a')
-    toppplista_skriv.write(str(poäng)+'\n')
-    toppplista_skriv.close()
-    toppplista_läs = open('topplista')
-    topplista = toppplista_läs.read()
-    sorterad_topplista = topplista.split()
-    for n in range (len(sorterad_topplista)):
-        sorterad_topplista[n]=int(sorterad_topplista[n])
-    sorterad_topplista.sort(reverse=True)
+class spelet:
+    "detta är klassen spelet som tar parametrarna för spelet och gör allt annat"
+    def __init__(self, width, height, bombchans, antal_tomma, tid_start):
+        self.width=  width
+        self.heigt = height
+        self.bombchans = bombchans
+        self.antal_tomma = antal_tomma
+        self.tid_start = tid_start
+        spelet.minesweeper(self, width, height, bombchans, antal_tomma, tid_start)
 
-    window = Tk()
-    "denna del skapar fönstret"
-    rubrik = Label(window, text="Resultat", pady=8, padx=8).grid(row= 1, column=1, columnspan=2)
-    din_poäng_text = Label(window, text="Din poäng", pady=8, padx=8).grid(row= 2, column=1)
-    din_poäng = Label(window, text=str(poäng), pady=8, padx=8).grid(row=2, column=2)
-    bästa_genom_tiderna = Label(window, text="Bästa resultat genom tiderna", pady=8, padx=8).grid(row= 3, column=1, columnspan=2)
-    resultat_rutor = [[2] for i  in range (min(10, len(sorterad_topplista)))]
-    for rutor in range (min(10, len(sorterad_topplista))):
-        resultat_rutor[0]= Label(window, text=str(rutor+1) + ".", pady=8, padx=8).grid(row= (4 + rutor), column=1)
-        resultat_rutor[1] = Label(window, text=str(sorterad_topplista[rutor]) + " poäng", pady=8, padx=8).grid(row=4 + rutor, column=2)
-    spela_igen = Button(window, text="Spela igen", command=lambda: återstart()).grid(row=15, columnspan=2)
-
-
-
-
-
-def spelet(width, height, bombchans, antaltomma, tid_start):
-    "detta är den stora funktionen som skapar minesweeper"
-    window = Tk()
-    rutbild = PhotoImage(file=r"tile.png")
-    gråruta = rutbild.subsample(5, 5)
-    oformateradflagga = PhotoImage(file=r"flag.png")
-    bilder = [0 for i in range (10)]
-    flag = oformateradflagga.subsample(23, 23)
-    noll= PhotoImage(file=r"0.png").subsample(5, 5)
-    ett = PhotoImage(file=r"1.png").subsample(5, 5)
-    två  = PhotoImage(file=r"2.png").subsample(5, 5)
-    tre = PhotoImage(file=r"3.png").subsample(5, 5)
-    fyra = PhotoImage(file=r"4.png").subsample(5, 5)
-    fem = PhotoImage(file=r"5.png").subsample(5, 5)
-    sex = PhotoImage(file=r"6.png").subsample(5, 5)
-    "lägger alla bilder i en lista, man kan inte skapa bilderna direkt i listan utan man måste skapa dem och sedan lägga dem i listan"
-    bilder[0] = noll
-    bilder[1] = ett
-    bilder[2] = två
-    bilder[3] = tre
-    bilder[4] = fyra
-    bilder[5] = fem
-    bilder[6] = sex
-    mina = PhotoImage(file=r"mina.png").subsample(5, 5)
-
-    "vital information"
-    rutnät = [[0 for h in range(height)] for b in range(width)]
-    spelinfo = [[0 for h in range(height)] for b in range(width)]
-    antal_knapptryck = 0
-    korrekta_flaggor= 0
-    antalbomber=math.ceil(((width*height)-antaltomma)*bombchans)
-    kvar_till_vinst = (width*height) - antalbomber + 1
-
-    def loser():
-        "åtgärd om man förlorar BOOM"
-        tid_slut = time.time()
-        for x in range (width):
-            for y in range(height):
-                åtgärder_vid_synliggörande(x, y)
-        slut(tid_start, tid_slut, antal_knapptryck, bombchans)
-        info_om_flaggor = Label(window, text="Antal korrekt markerade Minor: " + str(korrekta_flaggor)+ "/"+str(antalbomber)).grid(row=1, column=1, columnspan=height)
-
-    def winner():
-        "åtgärd om man röjer alla rutor"
-        tid_slut = time.time()
-        for x in range(width):
-            for y in range(height):
-                rutnät[x][y].unbind("<Button-1>")
-                rutnät[x][y].unbind("<Button-3>")
-                if spelinfo [x][y].bomb==True:
-                    rutnät[x][y].config(image=flag)
-        slut(tid_start, tid_slut, antal_knapptryck/0.75, bombchans)
-
-
-
-    def konrolleragänser(x, y):
-        "denna funktion kallas på när en del av programmet ska kolla på rutorna runtikring sig"
+    def konrolleragänser(x, y, width, height):
+        "denna funktion kallas på när en del av klassen ska kolla på rutorna runtikring sig"
         "den kollar att inget är utanför listan och returnerar objektet kontroll som har 4 värden som är giltiga gränser att kolla inom i listan"
+        "input: storlek på spelplan och var man klickar" \
+        "output: giltiga rutor runtikring att undersöka"
+
         class kontroll:
             def __init__(self, vänster, höger, upp, ned):
                 self.vänster = vänster
@@ -125,8 +49,10 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
             elif y == height - 1:
                 return kontroll(-1, 2, 1, -1)
 
-    def skapaspelplan(klickx, klicky):
-        "denna funtion skapar spelaplanen och returnerar en lista med object 'ruta' som har alla attribut man behöver för varje ruta"
+    def skapaspelplan(klickx, klicky, height, width, antal_tomma, antal_bomber):
+        "denna funtion skapar spelaplanen utifrån givna parametrar"
+        "Iput: parametrar kring spelplanen"
+        "lista med alla rutor och vad de har för attribut"
 
         class ruta:
             grannar = 0
@@ -134,174 +60,268 @@ def spelet(width, height, bombchans, antaltomma, tid_start):
             tom = False
             ursprungsruta = False
             synlig = False
-            flaggad =False
+            flaggad = False
 
         spelplan = [[ruta() for l in range(height + 1)] for h in range(width + 1)]
         spelplan[klickx][klicky].ursprungsruta = True
-        tommarutor = 1
+        tomma_rutor = 1
 
-        while tommarutor < antaltomma:
+        while tomma_rutor < antal_tomma:
             "denna loop skapar tomma rutorna vid första trycket genom att slumpmässsigt gå runtikring den punkten och tilldela attributet utsprungsruta och tom"
-            tommarutor += 1
-            UtgångspunktFörTomtOmrådeX = klickx
-            UtgångspunktFörTomtOmrådeY = klicky
+            tomma_rutor += 1
+            tom_rutaX = klickx
+            tom_rutaY = klicky
             while True:
-                if spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].ursprungsruta == False:
-                    spelplan[UtgångspunktFörTomtOmrådeX][UtgångspunktFörTomtOmrådeY].ursprungsruta = True
+                if spelplan[tom_rutaX][tom_rutaY].ursprungsruta == False:
+                    spelplan[tom_rutaX][tom_rutaY].ursprungsruta = True
                     break
                 steg = random.randint(1, 4)
-                if steg == 1 and UtgångspunktFörTomtOmrådeX != width:
-                    UtgångspunktFörTomtOmrådeX += 1
-                elif steg == 2 and UtgångspunktFörTomtOmrådeX != 0:
-                    UtgångspunktFörTomtOmrådeX -= 1
-                elif steg == 3 and UtgångspunktFörTomtOmrådeY != height:
-                    UtgångspunktFörTomtOmrådeY += 1
-                elif steg == 4 and UtgångspunktFörTomtOmrådeY != 0:
-                    UtgångspunktFörTomtOmrådeY -= 1
+                if steg == 1 and tom_rutaX != width:
+                    tom_rutaX += 1
+                elif steg == 2 and tom_rutaX != 0:
+                    tom_rutaX -= 1
+                elif steg == 3 and tom_rutaY != height:
+                    tom_rutaY += 1
+                elif steg == 4 and tom_rutaY != 0:
+                    tom_rutaY -= 1
 
-        bomber=0
-        while bomber < antalbomber:
+        bomber = 0
+        while bomber < antal_bomber:
             "denna loop placerar ut bomber slumpmässigt"
             randomX = random.randint(0, width - 1)
             randomY = random.randint(0, height - 1)
             if spelplan[randomX][randomY].ursprungsruta == False and spelplan[randomX][randomY].bomb == False:
-                "om det inte är en bomb eller uttryckligen tom ruta så placerar den ut en bomb och " \
-                "informerar grannar om att det är en bomb i närhetetn"
                 spelplan[randomX][randomY].bomb = True
-                tilldelagrannar = konrolleragänser(randomX, randomY)
+                tilldelagrannar = spelet.konrolleragänser(randomX, randomY, width, height)
                 for sida in range(tilldelagrannar.vänster, tilldelagrannar.höger):
                     for höjd in range(tilldelagrannar.ned, tilldelagrannar.upp):
                         spelplan[randomX + sida][randomY + höjd].grannar += 1
-                bomber+=1
+                bomber += 1
 
         return spelplan
 
-    def åtgärder_vid_synliggörande(x, y):
-        "om en ruta synliggörs så visas olika bilder beroende på vad det är för någon ruta"
-        spelinfo[x][y].synlig = True
-        rutnät[x][y].unbind("<Button-1>")
-        rutnät[x][y].unbind("<Button-3>")
-        if spelinfo[x][y].flaggad == False:
-            if spelinfo[x][y].bomb==True:
-                rutnät[x][y].config(image=mina)
-            else:
-                rutnät[x][y].config(image=bilder[spelinfo[x][y].grannar])
-            nonlocal kvar_till_vinst
-            kvar_till_vinst -= 1
+
+    def minesweeper(self, width, height, bombchans, antal_tomma, tid_start):
+        "detta är den stora funktionen som skapar grafiken"
+        "input: spelparametrar"
+        "output: stängs eller kan starta om main()"
+
+        "bilder laddas in och konstanter defineras"
+        minesweeper_fönster = Tk()
+        rutbild = PhotoImage(file=r"tile.png")
+        gråruta = rutbild.subsample(5, 5)
+        oformaterad_flagga = PhotoImage(file=r"flag.png")
+        bilder = [0 for i in range (7)]
+        flag = oformaterad_flagga.subsample(23, 23)
+        mina = PhotoImage(file=r"mina.png").subsample(5, 5)
+        for i in range (7):
+            filnamn= str(i)+".png"
+            bilder[i] = PhotoImage(file=filnamn).subsample(5, 5)
+        rutnät = [[0 for h in range(height)] for b in range(width)]
+        antal_bomber = math.ceil(((width * height) - antal_tomma) * bombchans)
+
+        "vitala variabler"
+        class spelinfo:
+            information = 0
+            antal_knapptryck = 0
+            korrekta_flaggor= 0
+            kvar_till_vinst = (width * height) - antal_bomber + 1
+
+
+        def slut(tid_start, tid_slut, knapptryck, bombchans):
+            "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
+            "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar det eller inte"
+            "den uppdaterar även listan med alla resultat"
+            "output: fönster med resultat"
+
+
+            poäng = int((bombchans * knapptryck) / (tid_slut - tid_start + 10) * 1000)
+            toppplista_skriv = open('topplista', 'a')
+            toppplista_skriv.write(str(poäng) + '\n')
+            toppplista_skriv.close()
+            toppplista_läs = open('topplista')
+            topplista = toppplista_läs.read()
+            sorterad_topplista = topplista.split()
+            for n in range(len(sorterad_topplista)):
+                sorterad_topplista[n] = int(sorterad_topplista[n])
+            sorterad_topplista.sort(reverse=True)
+
+            slut_fönster = Tk()
+            rubrik = Label(slut_fönster, text="Resultat", pady=8, padx=8).grid(row=1, column=1, columnspan=2)
+            din_poäng_text = Label(slut_fönster, text="Din poäng", pady=8, padx=8).grid(row=2, column=1)
+            din_poäng = Label(slut_fönster, text=str(poäng), pady=8, padx=8).grid(row=2, column=2)
+            bästa_genom_tiderna = Label(slut_fönster, text="Bästa resultat genom tiderna", pady=8, padx=8).grid(row=3,column=1,columnspan=2)
+            resultat_rutor = [[2] for i in range(min(10, len(sorterad_topplista)))]
+            for rutor in range(min(10, len(sorterad_topplista))):
+                resultat_rutor[0] = Label(slut_fönster, text=str(rutor + 1) + ".", pady=8, padx=8).grid(row=(4 + rutor),column=1)
+                resultat_rutor[1] = Label(slut_fönster, text=str(sorterad_topplista[rutor]) + " poäng", pady=8,padx=8).grid(row=4 + rutor, column=2)
+            def omstart():
+                minesweeper_fönster.destroy()
+                slut_fönster.destroy()
+                main()
+
+            spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart()).grid(row=15, columnspan=2)
+
+
+        def loser():
+            "åtgärd om man förlorar BOOM, då stoppas spelet och man går till slut-panelen"
+            "output=slut() och visar hela spelplanen"
+            tid_slut = time.time()
+            for x in range (width):
+                for y in range(height):
+                    åtgärder_vid_synliggörande(x, y)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck, bombchans)
+            info_om_flaggor = Label(minesweeper_fönster, text="Antal korrekt markerade Minor: " + str(spelinfo.antal_knapptryck)+ "/"+str(antal_bomber)).grid(row=1, column=1, columnspan=height)
+
+        def winner():
+            "åtgärd om man röjer alla rutor, då stoppas spelet och man går till slut-panelen"
+            "output=slut()"
+            tid_slut = time.time()
+            for x in range(width):
+                for y in range(height):
+                    rutnät[x][y].unbind("<Button-1>")
+                    rutnät[x][y].unbind("<Button-3>")
+                    if spelinfo.information [x][y].bomb==True:
+                        rutnät[x][y].config(image=flag)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.75, bombchans)
+
+
+        def åtgärder_vid_synliggörande(x, y):
+            "om en ruta synliggörs så visas olika bilder beroende på vad det är för någon ruta"
+            "funktionen konfigurerar rutorna"
+            "input: kordinater"
+            "output=ändrar vad som visas på rutorna"
+            spelinfo.information[x][y].synlig = True
+            rutnät[x][y].unbind("<Button-1>")
+            rutnät[x][y].unbind("<Button-3>")
+            if spelinfo.information[x][y].flaggad == False:
+                if spelinfo.information[x][y].bomb==True:
+                    rutnät[x][y].config(image=mina)
+                else:
+                    rutnät[x][y].config(image=bilder[spelinfo.information[x][y].grannar])
+                    spelinfo.kvar_till_vinst -= 1
 
 
 
-    def gör_ruta_synlig(x, y):
-        "denna funktion gör rutor synliga, den har även uppdraget att via rekursion synliggöra alla rutor i ett samanhängande"
-        "område om dem har 0 bomber som grannar"
-        if spelinfo[x][y].bomb == False:
-            gräns = konrolleragänser(x, y)
-            åtgärder_vid_synliggörande(x, y)
-            if spelinfo[x][y].grannar == 0:
+        def gör_ruta_synlig(x, y):
+            "denna funktion gör rutor synliga, den har även uppdraget att via rekursion synliggöra alla rutor i ett samanhängande"
+            "område om dem har 0 bomber som grannar"
+            "input: kordinater"
+            "output=synliggör rutor enligt spelets regelr och tar en till slut-rutan vid vinst/förlust"
+            if spelinfo.information[x][y].bomb == False:
+                gräns = spelet.konrolleragänser(x, y, height, width)
+                åtgärder_vid_synliggörande(x, y)
+                if spelinfo.information[x][y].grannar == 0:
+                    for sida in range(gräns.vänster, gräns.höger):
+                        for höjden in range(gräns.ned, gräns.upp):
+                            if spelinfo.information[x+sida][y+höjden].synlig==False and spelinfo.information[x+sida][y+höjden].bomb==False:
+                                gör_ruta_synlig(x+sida, y+höjden)
+                if spelinfo.kvar_till_vinst == 0:
+                    winner()
+            elif spelinfo.information[x][y].bomb == True:
+                loser()
+
+        def knapptryck(x, y):
+            "denna funktion aktiveras vid varje vänsterklick och om det är första klicket skapar den hela spelplanen (dvs om antalknapptryck==0)"
+            "input: kordinater"
+            "output=skapar spelplanen vid första knapptrycket, alternativt, gör ruta synlig"
+            if spelinfo.antal_knapptryck == 0:
+                spelinfo.information = spelet.skapaspelplan(x, y, height, width, antal_tomma, antal_bomber)
+                gräns = spelet.konrolleragänser(x, y, width, height)
                 for sida in range(gräns.vänster, gräns.höger):
                     for höjden in range(gräns.ned, gräns.upp):
-                        if spelinfo[x+sida][y+höjden].synlig==False and spelinfo[x+sida][y+höjden].bomb==False:
-                            gör_ruta_synlig(x+sida, y+höjden)
-            if kvar_till_vinst == 0:
-                "om man röjt alla rutor utan minor vinner man"
-                winner()
-        elif spelinfo[x][y].bomb == True:
-            loser()
+                        if spelinfo.information[x + sida][y + höjden].synlig == False and spelinfo.information[x + sida][y + höjden].bomb == False:
+                            gör_ruta_synlig(x + sida, y + höjden)
+            gör_ruta_synlig(x, y)
+            spelinfo.antal_knapptryck += 1
 
-    def knapptryck(x, y):
-        "denna funktion aktiveras vid varje vänsterklick och om det är första klicket skapar den hela spelplanen (dvs om antalknapptryck==0)"
-        nonlocal antal_knapptryck
-        if antal_knapptryck == 0:
-            nonlocal spelinfo
-            spelinfo = skapaspelplan(x, y)
-            gräns = konrolleragänser(x, y)
-            for sida in range(gräns.vänster, gräns.höger):
-                for höjden in range(gräns.ned, gräns.upp):
-                    if spelinfo[x + sida][y + höjden].synlig == False and spelinfo[x + sida][y + höjden].bomb == False:
-                        gör_ruta_synlig(x + sida, y + höjden)
-        gör_ruta_synlig(x, y)
-        antal_knapptryck += 1
+        def återgåfrånfalgga(x, y):
+            "input: kordinater"
+            "låter ruta gå från flagga till vanlig ruta"
+            "input: kordinater"
+            "output=ändrar bilden på rutan med den kordinaten och key-bindings"
+            rutnät[x][y].config(image=gråruta)
+            rutnät[x][y].bind("<Button-1>", lambda e, knapptryck=knapptryck: knapptryck(x, y))
+            rutnät[x][y].bind("<Button-3>", lambda e, knapptryck=knapptryck: flagga(x, y))
+            if spelinfo.information[x][y].bomb ==True:
+                spelinfo.information[x][y].flaggad = False
+                spelinfo.korrekta_flaggor -= 1
 
-    def återgåfrånfalgga(x, y):
-        "låter ruta gå från flagga till vanlig ruta"
-        rutnät[x][y].config(image=gråruta)
-        rutnät[x][y].bind("<Button-1>", lambda e, knapptryck=knapptryck: knapptryck(x, y))
-        rutnät[x][y].bind("<Button-3>", lambda e, knapptryck=knapptryck: flagga(x, y))
-        if spelinfo[x][y].bomb ==True:
-            spelinfo[x][y].flaggad = False
-            nonlocal korrekta_flaggor
-            korrekta_flaggor -= 1
-
-    def flagga(x, y):
-        if antal_knapptryck != 0:
+        def flagga(x, y):
             "låter en ruta bli o-klickbar och visar flagga"
-            rutnät[x][y].config(image=flag)
-            rutnät[x][y].unbind("<Button-1>")
-            rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga: återgåfrånfalgga(x, y))
-            if spelinfo[x][y].bomb ==True:
-                spelinfo[x][y].flaggad = True
-                nonlocal korrekta_flaggor
-                korrekta_flaggor += 1
+            "input: kordinater"
+            "output= ändrar bilden på rutan med den kordinaten och key-bindings"
+            if spelinfo.antal_knapptryck != 0:
+                rutnät[x][y].config(image=flag)
+                rutnät[x][y].unbind("<Button-1>")
+                rutnät[x][y].bind("<Button-3>", lambda e, återgåfrånfalgga=återgåfrånfalgga: återgåfrånfalgga(x, y))
+                if spelinfo.information[x][y].bomb ==True:
+                    spelinfo.information[x][y].flaggad = True
+                    spelinfo.korrekta_flaggor += 1
 
-    def skaparuta(rad, kollumn):
-        "denna funktion skapar spelplanen med alla bilder det första som händer"
-        label = Label(window, image=gråruta, cursor="tcross")
-        label.grid(column=kollumn + 1, row=rad + 2)
-        label.bind("<Button-1>", lambda e, : knapptryck(rad, kollumn))
-        label.bind("<Button-3>", lambda e, : flagga(rad, kollumn))
-        return label
+        def skaparuta(x, y):
+            "denna funktion skapar spelplanen med alla bilder det första som händer"
+            "input: kordinater"
+            "output=label med en korrespenderande handling vid klick"
+            label = Label(minesweeper_fönster, image=gråruta, cursor="tcross")
+            label.grid(column=x + 1, row=y + 2)
+            label.bind("<Button-1>", lambda e, : knapptryck(x, y))
+            label.bind("<Button-3>", lambda e, : flagga(x, y))
+            return label
 
-    for x in range(width):
-        for y in range(height):
-            rutnät[x][y] = skaparuta(x, y)
-            "denna loop har i uppgift att skap alla rutor och att tilldela alla Labels en position i en matris"
+        "denna loop har i uppgift att skapa alla rutor och att tilldela alla Labels en position i en matris"
+        for x in range(width):
+            for y in range(height):
+                rutnät[x][y] = skaparuta(x, y)
+
 
 
 
 
 def main():
+
     "denna funktion sätter alla parametrar för spelet innan man börjar"
     window = Tk()
 
-    väljhöjd = Label(window, text="välj höjd på spelplanen, minst 8 enheter: ")
-    väljhöjd.grid(row=1, column=1, columnspan=2)
-    höjdinput = Entry(window)
-    höjdinput.grid(row=1, column=3)
-    väljbredd = Label(window, text="välj bredd på spelplanen, minst 8 enheter: ")
-    väljbredd.grid(row=2, column=1, columnspan=2)
-    breddinput = Entry(window)
-    breddinput.grid(row=2, column=3)
+    välj_höjd = Label(window, text="välj höjd på spelplanen, minst 8 enheter: ")
+    välj_höjd.grid(row=1, column=1, columnspan=2)
+    höjd_input = Entry(window)
+    höjd_input.grid(row=1, column=3)
+    välj_bredd = Label(window, text="välj bredd på spelplanen, minst 8 enheter: ")
+    välj_bredd.grid(row=2, column=1, columnspan=2)
+    bredd_input = Entry(window)
+    bredd_input.grid(row=2, column=3)
 
     def sätt_igång_spelet(svårighetsgrad):
         "denna funktion sätter igång spelet med de valda parametrar man valt"
+        "input=spelparametrar"
+        "output=minesweeper"
         try:
-            spelbredd = int(breddinput.get())
-            spelhöjd = int(höjdinput.get())
+            spelbredd = int(bredd_input.get())
+            spelhöjd = int(höjd_input.get())
         except ValueError:
-            "felhantering"
             felmeddelande = Label(window, text="kontrollera inputs och försök igen")
             felmeddelande.grid(row=4, column=1, columnspan=3)
 
         else:
             if spelbredd < 8 or spelhöjd < 8:
-                "felhantering"
                 felmeddelande = Label(window, text="kontrollera inputs och försök igen")
                 felmeddelande.grid(row=4, column=1, columnspan=3)
             else:
                 tid_start = time.time()
-                antaltomma = int(math.sqrt(spelhöjd * spelbredd))
-                if antaltomma > 20:
-                    antaltomma = 20
+                antal_tomma = int(math.sqrt(spelhöjd * spelbredd))
+                if antal_tomma > 20:
+                    antal_tomma = 20
                 bombchans = svårighetsgrad * 0.07
                 window.destroy()
-                spelet(spelhöjd, spelbredd, bombchans, antaltomma, tid_start)
+                spelet(spelhöjd, spelbredd, bombchans, antal_tomma, tid_start)
 
 
-    spelasvår = Button(window, text="Expert", command=lambda: sätt_igång_spelet(4)).grid(row=3, column=3)
-    spelamedel = Button(window, text="medel", command=lambda: sätt_igång_spelet(3)).grid(row=3, column=2)
-    spelalätt = Button(window, text="nybörjare", command=lambda: sätt_igång_spelet(2)).grid(row=3, column=1)
-    tomruta = Label(window, text="")
-    tomruta.grid(row=4, column=1)
+    spela_svår = Button(window, text="Expert", command=lambda: sätt_igång_spelet(4)).grid(row=3, column=3)
+    spela_medel = Button(window, text="medel", command=lambda: sätt_igång_spelet(3)).grid(row=3, column=2)
+    spela_lätt = Button(window, text="nybörjare", command=lambda: sätt_igång_spelet(2)).grid(row=3, column=1)
+    tom_ruta = Label(window, text="")
+    tom_ruta.grid(row=4, column=1)
 
     mainloop()
 

@@ -186,10 +186,7 @@ class spelet:
             tid_slut = time.time()
             for x in range(width):
                 for y in range(height):
-                    rutnät[x][y].unbind("<Button-1>")
-                    rutnät[x][y].unbind("<Button-3>")
-                    if spelinfo.information [x][y].bomb==True:
-                        rutnät[x][y].config(image=flag)
+                    åtgärder_vid_synliggörande(x, y)
             slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.75, bombchans)
 
 

@@ -201,11 +201,12 @@ class spelet:
             spelinfo.information[x][y].synlig = True
             rutnät[x][y].unbind("<Button-1>")
             rutnät[x][y].unbind("<Button-3>")
-            if spelinfo.information[x][y].bomb==True and spelinfo.information[x][y].flaggad==False:
-                rutnät[x][y].config(image=mina)
-            else:
-                rutnät[x][y].config(image=bilder[spelinfo.information[x][y].grannar])
-                spelinfo.kvar_till_vinst -= 1
+            if spelinfo.information[x][y].flaggad==False:
+                if spelinfo.information[x][y].bomb==True:
+                    rutnät[x][y].config(image=mina)
+                else:
+                    rutnät[x][y].config(image=bilder[spelinfo.information[x][y].grannar])
+                    spelinfo.kvar_till_vinst -= 1
 
 
 

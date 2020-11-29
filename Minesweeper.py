@@ -29,10 +29,10 @@ class spelet:
         mina = PhotoImage(file=r"mina.png").subsample(5, 5)
         flag = oformaterad_flagga.subsample(23, 23)
         gråruta = rutbild.subsample(5, 5)
-        bilder = [0 for i in range(7)]
+        bilder = [0 for i in range(9)]
         rutnät = [[0 for h in range(height)] for b in range(width)]
 
-        for i in range (7):
+        for i in range (9):
             filnamn= str(i)+".png"
             bilder[i] = PhotoImage(file=filnamn).subsample(5, 5)
 
@@ -175,6 +175,7 @@ class spelet:
             for x in range (width):
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
+
             slut(tid_start, tid_slut, spelinfo.antal_knapptryck, bombchans)
             info_om_flaggor = Label(minesweeper_fönster, text="Antal korrekt markerade Minor: " + str(spelinfo.korrekta_flaggor)+ "/"+str(antal_bomber)).grid(row=1, column=1, columnspan=width)
 
@@ -200,13 +201,11 @@ class spelet:
             spelinfo.information[x][y].synlig = True
             rutnät[x][y].unbind("<Button-1>")
             rutnät[x][y].unbind("<Button-3>")
-            if spelinfo.information[x][y].flaggad == False:
-                if spelinfo.information[x][y].bomb==True:
-                    rutnät[x][y].config(image=mina)
-                else:
-                    rutnät[x][y].config(image=bilder[spelinfo.information[x][y].grannar])
-                    spelinfo.kvar_till_vinst -= 1
-            print(spelinfo.kvar_till_vinst)
+            if spelinfo.information[x][y].bomb==True and spelinfo.information[x][y].flaggad==False:
+                rutnät[x][y].config(image=mina)
+            else:
+                rutnät[x][y].config(image=bilder[spelinfo.information[x][y].grannar])
+                spelinfo.kvar_till_vinst -= 1
 
 
 
@@ -319,7 +318,7 @@ def main():
                 antal_tomma = int(math.sqrt(spelhöjd * spelbredd))
                 if antal_tomma > 20:
                     antal_tomma = 20
-                bombchans = svårighetsgrad * 0.07
+                bombchans = svårighetsgrad * 0.065
                 window.destroy()
                 spelet( spelbredd, spelhöjd, bombchans, antal_tomma, tid_start)
 

@@ -92,7 +92,7 @@ def skapaspelplan(klickx, klicky, width, height, antal_tomma, antal_bomber):
     return spelplan
 
 
-def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster):
+def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster, width, height, antal_tomma):
     "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
     "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar det eller inte"
     "input: information om spelet och fönstert"
@@ -122,14 +122,15 @@ def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster):
         resultat_rutor[1] = Label(slut_fönster, text=str(sorterad_topplista[rutor]) + " poäng", pady=8, padx=8).grid(
             row=4 + rutor, column=2)
 
-    def omstart():
-        "input = NIL"
-        "output= stänger fönster och öppnar ett nytt"
+    def omstart(width, height, bombchans, antal_tomma, tid_start):
+        "input = spelparametrar"
+        "output= nytt minesewper"
         minesweeper_fönster.destroy()
         slut_fönster.destroy()
-        main()
+        fönster = Tk()
+        minesweeper(width, height, bombchans, antal_tomma, tid_start, fönster)
 
-    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart()).grid(row=15, columnspan=2)
+    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart(width, height, bombchans, antal_tomma, tid_start)).grid(row=15, columnspan=2)
 
 
 class minesweeper:
@@ -183,7 +184,7 @@ class minesweeper:
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
 
-            slut(tid_start, tid_slut, spelinfo.antal_knapptryck-1, bombchans, minesweeper_fönster)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck-1, bombchans, minesweeper_fönster, width, height, antal_tomma)
             info_om_flaggor = Label(minesweeper_fönster, text="Antal korrekt markerade Minor: " + str(spelinfo.korrekta_flaggor)+ "/"+str(antal_bomber)).grid(row=1, column=1, columnspan=width)
 
         def winner():
@@ -194,7 +195,7 @@ class minesweeper:
             for x in range(width):
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
-            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.9, bombchans, minesweeper_fönster)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.9, bombchans, minesweeper_fönster, width, height, antal_tomma)
 
 
         def åtgärder_vid_synliggörande(x, y):

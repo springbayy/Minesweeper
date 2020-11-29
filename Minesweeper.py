@@ -95,8 +95,8 @@ def skapaspelplan(klickx, klicky, width, height, antal_tomma, antal_bomber):
 def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster):
     "denna funktion kallas på när spelet är slut. den skapar en ruta som visar ens poäng samt "
     "top 10. poängen baseras på passerad tid samt hur många rutor man röjt undan och om man klarar det eller inte"
-    "den uppdaterar även listan med alla resultat"
-    "output: fönster med resultat"
+    "input: information om spelet och fönstert"
+    "output: fönster med resultat och skriver i topplistan"
 
     poäng = int((bombchans * knapptryck) / (tid_slut - tid_start + 10) * 1000)
     toppplista_skriv = open('topplista', 'a')

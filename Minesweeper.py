@@ -183,7 +183,7 @@ class minesweeper:
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
 
-            slut(tid_start, tid_slut, spelinfo.antal_knapptryck, bombchans, minesweeper_fönster)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck-1, bombchans, minesweeper_fönster)
             info_om_flaggor = Label(minesweeper_fönster, text="Antal korrekt markerade Minor: " + str(spelinfo.korrekta_flaggor)+ "/"+str(antal_bomber)).grid(row=1, column=1, columnspan=width)
 
         def winner():
@@ -194,7 +194,7 @@ class minesweeper:
             for x in range(width):
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
-            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.8, bombchans)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.9, bombchans, minesweeper_fönster)
 
 
         def åtgärder_vid_synliggörande(x, y):
@@ -326,7 +326,7 @@ def main():
                 bombchans = svårighetsgrad * 0.065
                 window.destroy()
                 fönster = Tk()
-                spelet = minesweeper (spelbredd, spelhöjd, bombchans, antal_tomma, tid_start, fönster)
+                minesweeper (spelbredd, spelhöjd, bombchans, antal_tomma, tid_start, fönster)
 
 
     spela_svår = Button(window, text="Expert", command=lambda: sätt_igång_spelet(4)).grid(row=3, column=3)

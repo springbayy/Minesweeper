@@ -187,7 +187,7 @@ class spelet:
             for x in range(width):
                 for y in range(height):
                     åtgärder_vid_synliggörande(x, y)
-            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.75, bombchans)
+            slut(tid_start, tid_slut, spelinfo.antal_knapptryck/0.8, bombchans)
 
 
         def åtgärder_vid_synliggörande(x, y):

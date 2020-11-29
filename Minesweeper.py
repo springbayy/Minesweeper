@@ -40,7 +40,7 @@ def kontrollera_gränser(x, y, width, height):
         elif y == height - 1:
             return kontroll(-1, 2, 1, -1)
 
-def skapaspelplan(klickx, klicky, width, height, antal_tomma, antal_bomber):
+def skapa_spelplan(klickx, klicky, width, height, antal_tomma, antal_bomber):
     "denna funtion skapar spelaplanen utifrån givna parametrar"
     "Iput: parametrar kring spelplanen"
     "lista med alla rutor och vad de har för attribut"
@@ -117,20 +117,19 @@ def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster, width
                                                                                                         columnspan=2)
     resultat_rutor = [[2] for i in range(min(10, len(sorterad_topplista)))]
     for rutor in range(min(10, len(sorterad_topplista))):
-        resultat_rutor[0] = Label(slut_fönster, text=str(rutor + 1) + ".", pady=8, padx=8).grid(row=(4 + rutor),
-                                                                                                column=1)
-        resultat_rutor[1] = Label(slut_fönster, text=str(sorterad_topplista[rutor]) + " poäng", pady=8, padx=8).grid(
-            row=4 + rutor, column=2)
+        resultat_rutor[0] = Label(slut_fönster, text=str(rutor + 1) + ".", pady=8, padx=8).grid(row=(4 + rutor), column=1)
+        resultat_rutor[1] = Label(slut_fönster, text=str(sorterad_topplista[rutor]) + " poäng", pady=8, padx=8).grid(row=4 + rutor, column=2)
 
-    def omstart(width, height, bombchans, antal_tomma, tid_start):
+    def omstart(width, height, bombchans, antal_tomma):
         "input = spelparametrar"
         "output= nytt minesewper"
         minesweeper_fönster.destroy()
         slut_fönster.destroy()
         fönster = Tk()
-        minesweeper(width, height, bombchans, antal_tomma, tid_start, fönster)
+        ny_tid_start = time.time()
+        minesweeper(width, height, bombchans, antal_tomma, ny_tid_start, fönster)
 
-    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart(width, height, bombchans, antal_tomma, tid_start)).grid(row=15, columnspan=2)
+    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart(width, height, bombchans, antal_tomma)).grid(row=15, columnspan=2)
 
 
 class minesweeper:
@@ -238,7 +237,7 @@ class minesweeper:
             "input: kordinater"
             "output=skapar spelplanen vid första knapptrycket, alternativt, gör ruta synlig"
             if spelinfo.antal_knapptryck == 0:
-                spelinfo.information = skapaspelplan(x, y, width, height, antal_tomma, antal_bomber)
+                spelinfo.information = skapa_spelplan(x, y, width, height, antal_tomma, antal_bomber)
                 gräns = kontrollera_gränser(x, y, width, height)
                 for sida in range(gräns.vänster, gräns.höger):
                     for höjden in range(gräns.ned, gräns.upp):

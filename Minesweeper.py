@@ -130,6 +130,8 @@ def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster, width
         minesweeper(width, height, bombchans, antal_tomma, ny_tid_start, fönster)
 
     def nya_regler():
+        "input = NIL"
+        "output= stänger fönster och kör om main()"
         minesweeper_fönster.destroy()
         slut_fönster.destroy()
         main()

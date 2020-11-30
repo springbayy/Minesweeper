@@ -129,7 +129,13 @@ def slut(tid_start, tid_slut, knapptryck, bombchans, minesweeper_fönster, width
         ny_tid_start = time.time()
         minesweeper(width, height, bombchans, antal_tomma, ny_tid_start, fönster)
 
-    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart(width, height, bombchans, antal_tomma)).grid(row=15, columnspan=2)
+    def nya_regler():
+        minesweeper_fönster.destroy()
+        slut_fönster.destroy()
+        main()
+
+    spela_igen = Button(slut_fönster, text="Spela igen", command=lambda: omstart(width, height, bombchans, antal_tomma)).grid(row=15, column=1)
+    nya_inställningar = Button(slut_fönster, text="Nya regler",command=lambda: nya_regler()).grid(row=15, column=2)
 
 
 class minesweeper:

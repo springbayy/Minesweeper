@@ -162,16 +162,16 @@ class minesweeper:
 
         "bilder laddas in och konstanter defineras"
         minesweeper_fönster = fönster
-        rutbild = PhotoImage(file=r"tile.png")
-        oformaterad_flagga = PhotoImage(file=r"flag.png")
-        mina = PhotoImage(file=r"mina.png").subsample(5, 5)
+        rutbild = PhotoImage(file=r"images/tile.png")
+        oformaterad_flagga = PhotoImage(file=r"images/flag.png")
+        mina = PhotoImage(file=r"images/mina.png").subsample(5, 5)
         flag = oformaterad_flagga.subsample(23, 23)
         gråruta = rutbild.subsample(5, 5)
         bilder = [0 for i in range(9)]
         rutnät = [[0 for h in range(height)] for b in range(width)]
 
         for i in range (9):
-            filnamn= str(i)+".png"
+            filnamn= "images/"+str(i)+".png"
             bilder[i] = PhotoImage(file=filnamn).subsample(5, 5)
 
         antal_bomber = math.ceil(((width * height) - antal_tomma) * bombchans)

@@ -16,6 +16,6 @@ Requires Python 3 with tkinter (included with the standard CPython installer).
 ## Contents
 
 - `Minesweeper.py` — the game
-- `*.png`, `mina.jfif` — tile / mine / flag image assets
-- `topplista` — high-score list
-- `Spec.pdf` — the original assignment specification
+- `images/` — tile / mine / flag image assets (`*.png`, `mina.jfif`)
+- `docs/Spec.pdf` — the original assignment specification
+- `topplista` — high-score list (written at runtime)
